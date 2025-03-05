@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat Traductor</title>
+  <title>Chat Translator</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
   <link rel="stylesheet" href="styles.css">
@@ -14,54 +14,54 @@
       <div class="flex items-center justify-between flex-wrap">
         <div class="flex items-center mb-4 sm:mb-0">
           <i class="fas fa-language text-3xl text-indigo-600 mr-3 app-logo"></i>
-          <h1 class="text-2xl font-bold text-gray-800">Chat Traductor</h1>
+          <h1 class="text-2xl font-bold text-gray-800">Chat Translator</h1>
         </div>
         <div class="flex space-x-2 flex-wrap">
           <select id="idioma-origen" class="language-selector border border-gray-200 rounded-xl px-4 py-2 text-sm bg-gray-50 focus-effect">
-            <option value="es">Español</option>
-            <option value="en">Inglés</option>
-            <option value="fr">Francés</option>
-            <option value="de">Alemán</option>
-            <option value="it">Italiano</option>
-            <option value="pt">Portugués</option>
+            <option value="es">Spanish</option>
+            <option value="en">English</option>
+            <option value="fr">French</option>
+            <option value="de">German</option>
+            <option value="it">Italian</option>
+            <option value="pt">Portuguese</option>
           </select>
           <div class="text-gray-400 flex items-center justify-center w-8 h-8 cursor-pointer hover:bg-gray-100 rounded-full transition-colors">
             <i class="fas fa-exchange-alt"></i>
           </div>
           <select id="idioma-destino" class="language-selector border border-gray-200 rounded-xl px-4 py-2 text-sm bg-gray-50 focus-effect">
-            <option value="en">Inglés</option>
-            <option value="es">Español</option>
-            <option value="fr">Francés</option>
-            <option value="de">Alemán</option>
-            <option value="it">Italiano</option>
-            <option value="pt">Portugués</option>
+            <option value="en">English</option>
+            <option value="es">Spanish</option>
+            <option value="fr">French</option>
+            <option value="de">German</option>
+            <option value="it">Italian</option>
+            <option value="pt">Portuguese</option>
           </select>
         </div>
       </div>
     </header>
     
-    <!-- Área del chat -->
+    <!-- Chat Area -->
     <div class="bg-white rounded-2xl shadow-lg mb-6 overflow-hidden">
       <div class="bg-gradient-to-r from-indigo-600 to-purple-600 py-3 px-5 text-white font-medium flex justify-between items-center">
-        <span>Conversación</span>
+        <span>Conversation</span>
         <button id="limpiar-chat" class="text-xs bg-white bg-opacity-20 hover:bg-opacity-30 py-1 px-3 rounded-full transition-colors">
-          <i class="fas fa-trash-alt mr-1"></i> Limpiar
+          <i class="fas fa-trash-alt mr-1"></i> Clear
         </button>
       </div>
       <div id="chat" class="p-5 h-96 overflow-y-auto space-y-4 chat-container mobile-chat-height mobile-padding">
         <div class="flex items-start">
           <div class="bg-gray-100 rounded-2xl p-4 max-w-xs sm:max-w-md message-in">
-            <p class="text-sm text-gray-700">¡Hola! Escribe un mensaje y selecciona los idiomas para traducir.</p>
+            <p class="text-sm text-gray-700">Hello! Write a message and select the languages to translate.</p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Formulario para enviar mensajes -->
+    <!-- Message Form -->
     <div class="bg-white rounded-2xl shadow-lg p-5 mobile-padding">
       <form id="formulario" class="flex items-center">
         <div class="relative flex-grow">
-          <input id="mensaje" type="text" placeholder="Escribe tu mensaje..." 
+          <input id="mensaje" type="text" placeholder="Write your message..." 
                  class="w-full border border-gray-200 rounded-xl py-3 px-4 pr-12 focus-effect">
           <button type="button" id="microfono" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-indigo-500 transition-colors">
             <i class="fas fa-microphone"></i>
@@ -69,38 +69,38 @@
         </div>
         <button type="submit" class="ml-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl px-5 py-3 font-medium hover:from-indigo-700 hover:to-purple-700 transition-colors flex items-center custom-button">
           <i class="fas fa-paper-plane mr-1"></i>
-          <span>Enviar</span>
+          <span>Send</span>
         </button>
       </form>
     </div>
   </div>
   
-  <!-- Contenedor para la ventana emergente de error -->
+  <!-- Error Modal -->
   <div id="error-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
     <div class="bg-white rounded-lg p-6 max-w-sm w-full">
       <h2 class="text-xl font-bold mb-4">Error</h2>
       <p id="error-message" class="text-gray-700 mb-4"></p>
-      <button id="close-modal" class="bg-indigo-600 text-white rounded-lg px-4 py-2">Cerrar</button>
+      <button id="close-modal" class="bg-indigo-600 text-white rounded-lg px-4 py-2">Close</button>
     </div>
   </div>
 
-  <!-- Contenedor para la ventana emergente de solicitud de nombre -->
+  <!-- Name Prompt Modal -->
   <div id="name-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
     <div class="bg-white rounded-lg p-6 max-w-sm w-full">
-      <h2 class="text-xl font-bold mb-4">Ingresa tu nombre</h2>
-      <input id="name-input" type="text" class="w-full border border-gray-200 rounded-xl py-3 px-4 mb-4" placeholder="Tu nombre">
-      <button id="submit-name" class="bg-indigo-600 text-white rounded-lg px-4 py-2">Aceptar</button>
+      <h2 class="text-xl font-bold mb-4">Enter your name</h2>
+      <input id="name-input" type="text" class="w-full border border-gray-200 rounded-xl py-3 px-4 mb-4" placeholder="Your name">
+      <button id="submit-name" class="bg-indigo-600 text-white rounded-lg px-4 py-2">Accept</button>
     </div>
   </div>
 
-  <!-- Contenedor para la ventana emergente de confirmación de eliminación -->
+  <!-- Confirm Delete Modal -->
   <div id="confirm-delete-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
     <div class="bg-white rounded-lg p-6 max-w-sm w-full">
-      <h2 class="text-xl font-bold mb-4">Confirmar Eliminación</h2>
-      <p class="text-gray-700 mb-4">¿Estás seguro de que deseas eliminar todos los mensajes del chat?</p>
+      <h2 class="text-xl font-bold mb-4">Confirm Deletion</h2>
+      <p class="text-gray-700 mb-4">Are you sure you want to delete all chat messages?</p>
       <div class="flex justify-end space-x-2">
-        <button id="cancel-delete" class="bg-gray-600 text-white rounded-lg px-4 py-2">Cancelar</button>
-        <button id="confirm-delete" class="bg-red-600 text-white rounded-lg px-4 py-2">Eliminar</button>
+        <button id="cancel-delete" class="bg-gray-600 text-white rounded-lg px-4 py-2">Cancel</button>
+        <button id="confirm-delete" class="bg-red-600 text-white rounded-lg px-4 py-2">Delete</button>
       </div>
     </div>
   </div>
