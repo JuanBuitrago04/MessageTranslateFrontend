@@ -10,25 +10,36 @@ document.addEventListener('DOMContentLoaded', function() {
     const nameModal = document.getElementById('name-modal');
     const nameInput = document.getElementById('name-input');
     const submitName = document.getElementById('submit-name');
-    const limpiarChatBtn = document.getElementById('limpiar-chat');
+    const limpiarChat = document.getElementById('limpiar-chat');
+    const confirmDeleteModal = document.getElementById('confirm-delete-modal');
+    const cancelDelete = document.getElementById('cancel-delete');
+    const confirmDelete = document.getElementById('confirm-delete');
   
     let sender = '';
-  
+
     // Función para agregar un mensaje al chat
-    function agregarMensaje(mensaje, tipo) {
+    function agregarMensaje(mensaje, tipo, timestamp, sender) {
         const mensajeDiv = document.createElement('div');
+        // 'user' para mensajes del usuario, 'system' para mensajes traducidos o del sistema
         mensajeDiv.className = 'flex items-start ' + (tipo === 'user' ? 'justify-end' : 'justify-start');
         
         const burbuja = document.createElement('div');
         burbuja.className = tipo === 'user' 
-            ? 'bg-indigo-600 text-white rounded-2xl p-4 max-w-xs sm:max-w-md'
-            : 'bg-gray-100 rounded-2xl p-4 max-w-xs sm:max-w-md';
+            ? 'text-white rounded-2xl p-4 max-w-xs sm:max-w-md message-out'
+            : tipo === 'system'
+            ? 'text-white rounded-2xl p-4 max-w-xs sm:max-w-md message-translated'
+            : 'bg-gray-100 rounded-2xl p-4 max-w-xs sm:max-w-md message-in';
         
         const texto = document.createElement('p');
         texto.className = 'text-sm';
         texto.textContent = mensaje;
         
+        const time = document.createElement('span');
+        time.className = 'text-xs timestamp';
+        time.textContent = new Date(timestamp).toLocaleString();
+        
         burbuja.appendChild(texto);
+        burbuja.appendChild(time);
         mensajeDiv.appendChild(burbuja);
         chatContainer.appendChild(mensajeDiv);
         chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -44,19 +55,18 @@ document.addEventListener('DOMContentLoaded', function() {
     async function actualizarChat() {
         try {
             const response = await fetch('https://messagetranslate.onrender.com/messages');
-            if (!response.ok) {
-                throw new Error("Error al obtener mensajes: " + response.statusText);
-            }
             const mensajes = await response.json();
-            
             if (!Array.isArray(mensajes)) {
                 throw new Error("La respuesta no es un arreglo");
             }
-  
+            // Limpia el chat
             chatContainer.innerHTML = '';
+            // Si los mensajes vienen en orden descendente, invierte el arreglo para mostrar el más antiguo primero
             mensajes.reverse().forEach(msg => {
-                agregarMensaje(`${msg.sender}: ${msg.message}`, 'user');
-                agregarMensaje(`Traducción: ${msg.translated} (${msg.language})`, 'system');
+                // Muestra el mensaje original con el color seleccionado por el usuario
+                agregarMensaje(`${msg.sender}: ${msg.message}`, 'user', msg.timestamp, msg.sender, msg.color);
+                // Muestra la traducción
+                agregarMensaje(`Traducción: ${msg.translated} (${msg.language})`, 'system', msg.timestamp, msg.sender);
             });
         } catch (error) {
             console.error("Error al obtener mensajes:", error);
@@ -75,34 +85,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
-                    sender: sender || 'Usuario', 
-                    message: mensaje, 
-                    targetLang: idiomaDestino.value  
+                    sender,              // nombre del usuario
+                    message: mensaje,    // mensaje en español
+                    sourceLang: idiomaOrigen.value,  // código del idioma origen
+                    targetLang: idiomaDestino.value,  // código del idioma destino
                 })
             });
-            
+            const data = await response.json();
             if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.error || "Error desconocido al enviar mensaje");
+                console.error("Error al enviar mensaje:", data.error);
+                mostrarError("Error al enviar mensaje: " + data.error);
+            } else {
+                // Actualiza el chat luego de enviar el mensaje
+                actualizarChat();
             }
-            
-            mensajeInput.value = '';
-            actualizarChat();
         } catch (error) {
             console.error("Error al enviar mensaje:", error);
             mostrarError("Error al enviar mensaje: " + error.message);
         }
-    });
-    
-    // Evento para limpiar el chat
-    limpiarChatBtn.addEventListener('click', async function () {
-        try {
-            await fetch('https://messagetranslate.onrender.com/messages', { method: 'DELETE' });
-            chatContainer.innerHTML = '';
-        } catch (error) {
-            console.error("Error al limpiar el chat:", error);
-            mostrarError("Error al limpiar el chat: " + error.message);
-        }
+        mensajeInput.value = '';
     });
     
     // Cerrar la ventana emergente de error
@@ -112,13 +113,46 @@ document.addEventListener('DOMContentLoaded', function() {
   
     // Manejar la ventana emergente de solicitud de nombre
     submitName.addEventListener('click', () => {
-        sender = nameInput.value.trim() || 'Usuario';
+        sender = nameInput.value.trim();
+        if (sender === '') {
+            sender = 'Usuario';
+        }
         nameModal.classList.add('hidden');
     });
+
+    // Mostrar el modal de confirmación de eliminación
+    limpiarChat.addEventListener('click', () => {
+        confirmDeleteModal.classList.remove('hidden');
+    });
+
+    // Cancelar la eliminación del chat
+    cancelDelete.addEventListener('click', () => {
+        confirmDeleteModal.classList.add('hidden');
+    });
+
+    // Confirmar la eliminación del chat
+    confirmDelete.addEventListener('click', async function() {
+        try {
+            const response = await fetch('https://messagetranslate.onrender.com/messages', {
+                method: 'DELETE'
+            });
+            if (!response.ok) {
+                const data = await response.json();
+                console.error("Error al limpiar el chat:", data.error);
+                mostrarError("Error al limpiar el chat: " + data.error);
+            } else {
+                // Limpia el chat en el frontend
+                chatContainer.innerHTML = '';
+                confirmDeleteModal.classList.add('hidden');
+            }
+        } catch (error) {
+            console.error("Error al limpiar el chat:", error);
+            mostrarError("Error al limpiar el chat: " + error.message);
+        }
+    });
   
-    nameModal.classList.remove('hidden');
-  
-    // Cargar mensajes al inicio y cada 5 segundos
-    actualizarChat();
+    // Actualiza el chat cada 5 segundos
     setInterval(actualizarChat, 5000);
+    // Llamada inicial para cargar mensajes
+    actualizarChat();
 });
